@@ -1,67 +1,152 @@
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth';
 import { useState } from 'react';
-import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Link } from 'expo-router';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { auth } from '../../firebaseConfig';
+import AuthInput from '../components/auth-input';
+import Logo from '../components/logo';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
-
-  const handleRegister = async () => {
-    setMessage('');
-    try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      setMessage('Cuenta creada. Ya puedes iniciar sesión.');
-    } catch (error) {
-      setMessage(`Error al registrar: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  };
+  const [messageIsError, setMessageIsError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
     setMessage('');
+    setIsLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      setMessageIsError(false);
       setMessage('Iniciaste sesión correctamente.');
       // Aquí agregaremos la navegación a tus rutinas más adelante
     } catch (error) {
+      setMessageIsError(true);
       setMessage(`Error al entrar: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    setMessage('');
+    if (!email.trim()) {
+      setMessageIsError(true);
+      setMessage('Escribe tu correo para enviarte el enlace de recuperación.');
+      return;
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, email.trim());
+      setMessageIsError(false);
+      setMessage('Te enviamos un enlace para restablecer tu contraseña.');
+    } catch (error) {
+      setMessageIsError(true);
+      setMessage(`Error al recuperar la contraseña: ${error instanceof Error ? error.message : String(error)}`);
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>One More Rep</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Correo electrónico"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Contraseña"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      {message ? <Text style={styles.message}>{message}</Text> : null}
-      <View style={styles.buttonContainer}>
-        <Button title="Iniciar Sesión" onPress={handleLogin} />
-      </View>
-      <View style={styles.buttonContainer}>
-        <Button title="Registrarse" onPress={handleRegister} color="#555" />
-      </View>
+    <View style={styles.screen}>
+      <StatusBar style="light" />
+      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        <Logo width={250} height={80} />
+        <Text style={styles.title}>Bienvenido{'\n'}de vuelta</Text>
+        <View style={styles.form}>
+          <AuthInput
+            placeholder="Correo electrónico"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+          />
+          <AuthInput
+            placeholder="Contraseña"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
+          <Pressable
+            accessibilityRole="button"
+            onPress={handlePasswordReset}
+            style={styles.forgotPassword}
+          >
+            <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
+          </Pressable>
+          {message ? (
+            <Text style={[styles.message, messageIsError && styles.errorMessage]}>{message}</Text>
+          ) : null}
+          <PressableButton
+            label={isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+            onPress={handleLogin}
+            disabled={isLoading}
+          />
+        </View>
+        <View style={styles.prompt}>
+          <Text style={styles.promptText}>¿No tienes cuenta? </Text>
+          <Link href="/register" style={styles.link}>Regístrate</Link>
+        </View>
+      </ScrollView>
     </View>
   );
 }
 
+function PressableButton({
+  disabled,
+  label,
+  onPress
+}: {
+  disabled: boolean;
+  label: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={disabled ? undefined : onPress}
+      style={[styles.submitButton, disabled && styles.disabledButton]}
+    >
+      <Text style={styles.submitButtonText}>{label}</Text>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20, backgroundColor: '#fff' },
-  title: { fontSize: 32, fontWeight: 'bold', textAlign: 'center', marginBottom: 40 },
-  input: { borderWidth: 1, borderColor: '#ccc', padding: 12, marginBottom: 20, borderRadius: 8 },
-  buttonContainer: { marginBottom: 12 },
-  message: { marginBottom: 16, textAlign: 'center', color: '#333' }
+  screen: { backgroundColor: '#000000', flex: 1 },
+  container: {
+    alignItems: 'center',
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 25,
+    paddingVertical: 32
+  },
+  title: {
+    color: '#F4F4F4',
+    fontSize: 36,
+    fontWeight: '300',
+    lineHeight: 42,
+    marginBottom: 27,
+    marginTop: 25,
+    textAlign: 'center'
+  },
+  form: { maxWidth: 360, width: '100%' },
+  forgotPassword: { alignSelf: 'flex-end', marginBottom: 25 },
+  forgotPasswordText: { color: '#C66B59', fontSize: 14 },
+  message: { color: '#FFFFFF', fontSize: 14, marginBottom: 14, textAlign: 'center' },
+  errorMessage: { color: '#FF8A76' },
+  submitButton: {
+    alignItems: 'center',
+    backgroundColor: '#FF4500',
+    borderRadius: 13,
+    justifyContent: 'center',
+    minHeight: 55,
+    paddingHorizontal: 12,
+    paddingVertical: 12
+  },
+  submitButtonText: { color: '#171717', fontSize: 20, fontWeight: 'bold', textAlign: 'center' },
+  disabledButton: { opacity: 0.6 },
+  prompt: { flexDirection: 'row', justifyContent: 'center', marginTop: 20 },
+  promptText: { color: '#F4F4F4', fontSize: 15 },
+  link: { color: '#F15A37', fontSize: 15, fontWeight: 'bold' }
 });
