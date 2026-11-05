@@ -18,9 +18,6 @@ export default function LoginScreen() {
     setIsLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      setMessageIsError(false);
-      setMessage('Iniciaste sesión correctamente.');
-      // Aquí agregaremos la navegación a tus rutinas más adelante
     } catch (error) {
       setMessageIsError(true);
       setMessage(`Error al entrar: ${error instanceof Error ? error.message : String(error)}`);
