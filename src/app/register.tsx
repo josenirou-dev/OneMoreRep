@@ -14,7 +14,6 @@ export default function RegisterScreen() {
   const [message, setMessage] = useState('');
   const [messageIsError, setMessageIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
   const handleRegister = async () => {
     setMessage('');
     if (!fullName.trim()) {
@@ -49,7 +48,9 @@ export default function RegisterScreen() {
       <StatusBar style="light" />
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <Logo width={250} height={80} />
-        <Text style={styles.title}>Crear cuenta</Text>
+        <Text numberOfLines={1} style={styles.title}>
+          Crear cuenta
+        </Text>
         <View style={styles.form}>
           <AuthInput
             placeholder="Nombre completo"
@@ -100,8 +101,8 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#F4F4F4',
-    fontSize: 36,
-    fontWeight: '300',
+    fontFamily: 'BarlowCondensed_600SemiBold_Italic',
+    fontSize: 28,
     marginBottom: 27,
     marginTop: 25,
     textAlign: 'center'

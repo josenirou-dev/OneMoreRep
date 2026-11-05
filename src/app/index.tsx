@@ -13,7 +13,6 @@ export default function LoginScreen() {
   const [message, setMessage] = useState('');
   const [messageIsError, setMessageIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
   const handleLogin = async () => {
     setMessage('');
     setIsLoading(true);
@@ -53,7 +52,9 @@ export default function LoginScreen() {
       <StatusBar style="light" />
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <Logo width={250} height={80} />
-        <Text style={styles.title}>Bienvenido{'\n'}de vuelta</Text>
+        <Text numberOfLines={1} style={styles.title}>
+          Bienvenido de vuelta
+        </Text>
         <View style={styles.form}>
           <AuthInput
             placeholder="Correo electrónico"
@@ -123,9 +124,8 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#F4F4F4',
-    fontSize: 36,
-    fontWeight: '300',
-    lineHeight: 42,
+    fontFamily: 'BarlowCondensed_600SemiBold_Italic',
+    fontSize: 28,
     marginBottom: 27,
     marginTop: 25,
     textAlign: 'center'
