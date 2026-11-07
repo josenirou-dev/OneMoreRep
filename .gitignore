@@ -32,6 +32,9 @@ yarn-error.*
 
 # local env files
 .env*.local
+backend/.env
+backend/firebase-service-account.json
+frontend/.env
 
 # typescript
 *.tsbuildinfo
