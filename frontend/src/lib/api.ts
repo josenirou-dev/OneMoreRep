@@ -1,6 +1,15 @@
+export type RoutineExercise = {
+  name: string;
+  imageKey: string | null;
+  sets: number;
+  loadType?: 'bodyweight' | 'weighted' | 'both' | null;
+  weightKg?: number | null;
+};
+
 export type Routine = {
   _id: string;
   name: string;
+  exercises: RoutineExercise[];
   createdAt: string;
   updatedAt: string;
 };
@@ -46,9 +55,31 @@ export function getRoutines(idToken: string) {
   return request<Routine[]>('/api/routines', idToken);
 }
 
-export function createRoutine(idToken: string, name: string) {
+export function createRoutine(
+  idToken: string,
+  name: string,
+  exercises: RoutineExercise[]
+) {
   return request<Routine>('/api/routines', idToken, {
     method: 'POST',
-    body: JSON.stringify({ name })
+    body: JSON.stringify({ name, exercises })
+  });
+}
+
+export function updateRoutine(
+  idToken: string,
+  routineId: string,
+  name: string,
+  exercises: RoutineExercise[]
+) {
+  return request<Routine>(`/api/routines/${routineId}`, idToken, {
+    method: 'PUT',
+    body: JSON.stringify({ name, exercises })
+  });
+}
+
+export function deleteRoutine(idToken: string, routineId: string) {
+  return request<{ message: string }>(`/api/routines/${routineId}`, idToken, {
+    method: 'DELETE'
   });
 }
